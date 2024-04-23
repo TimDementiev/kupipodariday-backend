@@ -9,6 +9,7 @@ import { HashModule } from '../hash/hash.module';
 import { User } from '../users/entities/user.entity';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { getJWTConfig } from '../config/jwt.config';
 
 @Module({
   imports: [
@@ -18,9 +19,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('jwt_secret'),
-      }),
+      useFactory: getJWTConfig,
       inject: [ConfigService],
     }),
   ],
@@ -28,4 +27,4 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthorizationModule {}
+export class AuthModule {}
