@@ -1,6 +1,7 @@
 import {
   Controller,
   UseGuards,
+  UseInterceptors,
   Get,
   Body,
   Patch,
@@ -13,22 +14,24 @@ import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { Wish } from '../wishes/entities/wish.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PrivUserInterceptor } from '../common/privUser.interceptor';
+import { PublicUserInterceptor } from '../common/publicUser.interceptor';
 
 @UseGuards(ThrottlerGuard)
 @Controller('users')
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(PrivUserInterceptor)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('find')
-  async findUsers(@Body('query') query: string): Promise<User[]> {
+  async findUsers(@Body('query') query: string) {
     return await this.usersService.findMany(query);
   }
 
   @Get('me')
-  async getMe(@Req() { user }: { user: User }): Promise<User> {
+  async getMe(@Req() { user }: { user: User }) {
     const userData = await this.usersService.findById(user.id);
 
     if (!userData) {
@@ -38,7 +41,8 @@ export class UsersController {
   }
 
   @Get(':username')
-  async getUserByUsername(@Param('username') username: string): Promise<User> {
+  @UseInterceptors(PublicUserInterceptor)
+  async getUserByUsername(@Param('username') username: string) {
     const user = await this.usersService.findByUsername(username);
 
     if (!user) {
@@ -52,17 +56,17 @@ export class UsersController {
   async updateUser(
     @Req() { user }: { user: User },
     @Body() dto: UpdateUserDto,
-  ): Promise<User> {
+  ) {
     return await this.usersService.updateOneById(user.id, dto);
   }
 
   @Get('me/wishes')
-  async getMyWishes(@Req() { user }: { user: User }): Promise<Wish[]> {
+  async getMyWishes(@Req() { user }: { user: User }) {
     return await this.usersService.findUserWishes(user.username);
   }
 
   @Get(':username/wishes')
-  async getUserWishes(@Param('username') username: string): Promise<Wish[]> {
+  async getUserWishes(@Param('username') username: string) {
     const user = await this.usersService.findByUsername(username);
     if (!user) {
       throw new NotFoundException('Пользователя не существует');
