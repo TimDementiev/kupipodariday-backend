@@ -18,6 +18,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { OwnerInterceptor } from '../common/owner.interceptor';
 import { WishInterceptor } from '../common/wish.interceptor';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Wish } from '../wishes/entities/wish.entity';
 
 @UseGuards(ThrottlerGuard)
 @Controller('wishes')
@@ -51,9 +52,9 @@ export class WishesController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  @UseInterceptors(OwnerInterceptor)
+  @UseInterceptors(OwnerInterceptor<Wish[]>)
   @UseInterceptors(WishInterceptor)
-  async findById(@Param('id') id: string) {
+  async findById(@Param('id') id: string): Promise<Wish> {
     return await this.wishesService.findById(+id);
   }
 
@@ -69,7 +70,7 @@ export class WishesController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  @UseInterceptors(OwnerInterceptor)
+  @UseInterceptors(OwnerInterceptor<Wish>)
   async deleteWish(@Req() { user }: { user: User }, @Param('id') id: string) {
     return await this.wishesService.remove(Number(id), user.id);
   }

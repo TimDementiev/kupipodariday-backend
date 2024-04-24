@@ -21,7 +21,7 @@ import { HashModule } from './hash/hash.module';
       inject: [ConfigService],
     }),
     ThrottlerModule.forRootAsync({
-      useFactory: async () => ({ ttl: 60, limit: 10 }),
+      useFactory: async () => [{ ttl: 80, limit: 10 }],
     }),
     UsersModule,
     WishesModule,
