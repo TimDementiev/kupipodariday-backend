@@ -120,6 +120,12 @@ export class WishesService {
 
     if (!wish) throw new BadRequestException('Подарок с таким id не найден');
 
+    if (updateWishDto.price && wish.raised > 0) {
+      throw new BadRequestException(
+        'Вы не можете изменять стоимость подарка, если уже есть желающие скинуться',
+      );
+    }
+
     if (!wish.offers.length) {
       for (const key in updateWishDto) {
         wish[key] = updateWishDto[key];
